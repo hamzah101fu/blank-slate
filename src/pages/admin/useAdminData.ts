@@ -174,7 +174,7 @@ export async function createQuestion(
 ) {
   const { error } = await supabase
     .from("questions")
-    .insert({ stage_id: stageId, type, content, order_index: orderIndex });
+    .insert({ stage_id: stageId, type, content: content as never, order_index: orderIndex });
   if (error) throw error;
 }
 
@@ -184,7 +184,7 @@ export async function updateQuestion(
 ) {
   const { error } = await supabase
     .from("questions")
-    .update({ content })
+    .update({ content: content as never })
     .eq("id", id);
   if (error) throw error;
 }
