@@ -112,6 +112,9 @@ const Index = () => {
       <div className="w-full max-w-xs">
         <button
           disabled={!selected}
+          onClick={() => {
+            if (!session) navigate("/auth");
+          }}
           className="w-full py-4 rounded-2xl font-bold text-base transition-all duration-200"
           style={{
             backgroundColor: selected ? "#D4A853" : "#E8E0D5",
