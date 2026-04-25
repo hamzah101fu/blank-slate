@@ -14,34 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      languages: {
-        Row: { id: string; code: string; name: string }
-        Insert: { id?: string; code: string; name: string }
-        Update: { id?: string; code?: string; name?: string }
-        Relationships: []
-      }
       courses: {
-        Row: { id: string; language_id: string; title: string; description: string | null; order_index: number }
-        Insert: { id?: string; language_id: string; title: string; description?: string | null; order_index?: number }
-        Update: { id?: string; language_id?: string; title?: string; description?: string | null; order_index?: number }
-        Relationships: []
+        Row: {
+          description: string | null
+          id: string
+          language_id: string
+          order_index: number
+          title: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          language_id: string
+          order_index?: number
+          title: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          language_id?: string
+          order_index?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      units: {
-        Row: { id: string; course_id: string; title: string; order_index: number }
-        Insert: { id?: string; course_id: string; title: string; order_index?: number }
-        Update: { id?: string; course_id?: string; title?: string; order_index?: number }
-        Relationships: []
-      }
-      stages: {
-        Row: { id: string; unit_id: string; name: string; stage_type: string; stage_number: number; order_index: number }
-        Insert: { id?: string; unit_id: string; name: string; stage_type: string; stage_number: number; order_index?: number }
-        Update: { id?: string; unit_id?: string; name?: string; stage_type?: string; stage_number?: number; order_index?: number }
-        Relationships: []
-      }
-      questions: {
-        Row: { id: string; stage_id: string; type: string; content: Json; order_index: number }
-        Insert: { id?: string; stage_id: string; type: string; content: Json; order_index?: number }
-        Update: { id?: string; stage_id?: string; type?: string; content?: Json; order_index?: number }
+      languages: {
+        Row: {
+          code: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          id?: string
+          name?: string
+        }
         Relationships: []
       }
       profiles: {
@@ -50,6 +70,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_admin: boolean
           updated_at: string
           user_id: string
         }
@@ -58,6 +79,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_admin?: boolean
           updated_at?: string
           user_id: string
         }
@@ -66,6 +88,212 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_admin?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          content: Json
+          id: string
+          order_index: number
+          stage_id: string
+          type: string
+        }
+        Insert: {
+          content: Json
+          id?: string
+          order_index?: number
+          stage_id: string
+          type: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          order_index?: number
+          stage_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stages: {
+        Row: {
+          id: string
+          name: string
+          order_index: number
+          stage_number: number
+          stage_type: string
+          unit_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          order_index?: number
+          stage_number: number
+          stage_type: string
+          unit_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          order_index?: number
+          stage_number?: number
+          stage_type?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stages_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      units: {
+        Row: {
+          course_id: string
+          id: string
+          order_index: number
+          title: string
+        }
+        Insert: {
+          course_id: string
+          id?: string
+          order_index?: number
+          title: string
+        }
+        Update: {
+          course_id?: string
+          id?: string
+          order_index?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          id: string
+          stage_id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          stage_id: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          stage_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_question_attempts: {
+        Row: {
+          attempted_at: string
+          correct: boolean
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          correct: boolean
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          correct?: boolean
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_question_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_active_date: string | null
+          longest_streak: number
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_active_date?: string | null
+          longest_streak?: number
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_active_date?: string | null
+          longest_streak?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_xp: {
+        Row: {
+          id: string
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          total_xp?: number
           updated_at?: string
           user_id?: string
         }
