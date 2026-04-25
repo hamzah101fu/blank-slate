@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 
 const LANGUAGES = [
   {
@@ -19,12 +22,52 @@ const LANGUAGES = [
 
 const Index = () => {
   const [selected, setSelected] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const displayName =
+    (session?.user.user_metadata?.display_name as string | undefined) ??
+    session?.user.email?.split("@")[0];
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 py-16"
+      className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative"
       style={{ backgroundColor: "#FAF6F0" }}
     >
+      {/* Auth corner */}
+      <div className="absolute top-6 right-6">
+        {session ? (
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium" style={{ color: "#1E2D3D", opacity: 0.7 }}>
+              {displayName}
+            </span>
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+              }}
+              className="text-xs font-semibold px-3 py-2 rounded-full border-2 transition-colors"
+              style={{ borderColor: "#E8E0D5", color: "#1E2D3D", backgroundColor: "#FFFFFF" }}
+            >
+              Sign out
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/auth"
+            className="text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+            style={{ backgroundColor: "#1E2D3D", color: "#FAF6F0" }}
+          >
+            Sign in
+          </Link>
+        )}
+      </div>
+
       {/* Brand */}
       <div className="text-center mb-14">
         <p
@@ -109,6 +152,9 @@ const Index = () => {
       <div className="w-full max-w-xs">
         <button
           disabled={!selected}
+          onClick={() => {
+            if (!session) navigate("/auth");
+          }}
           className="w-full py-4 rounded-2xl font-bold text-base transition-all duration-200"
           style={{
             backgroundColor: selected ? "#D4A853" : "#E8E0D5",
