@@ -151,6 +151,8 @@ const Index = () => {
           disabled={!selected}
           onClick={() => {
             if (!selected) return;
+            const lang = LANGUAGES.find((l) => l.id === selected);
+            if (lang) localStorage.setItem("guftugu_language", lang.name);
             navigate(session ? "/course-map" : "/auth");
           }}
           className="w-full py-4 rounded-2xl font-bold text-base transition-all duration-200"
