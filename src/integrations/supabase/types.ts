@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      languages: {
+        Row: { id: string; code: string; name: string }
+        Insert: { id?: string; code: string; name: string }
+        Update: { id?: string; code?: string; name?: string }
+        Relationships: []
+      }
+      courses: {
+        Row: { id: string; language_id: string; title: string; description: string | null; order_index: number }
+        Insert: { id?: string; language_id: string; title: string; description?: string | null; order_index?: number }
+        Update: { id?: string; language_id?: string; title?: string; description?: string | null; order_index?: number }
+        Relationships: []
+      }
+      units: {
+        Row: { id: string; course_id: string; title: string; order_index: number }
+        Insert: { id?: string; course_id: string; title: string; order_index?: number }
+        Update: { id?: string; course_id?: string; title?: string; order_index?: number }
+        Relationships: []
+      }
+      stages: {
+        Row: { id: string; unit_id: string; name: string; stage_type: string; stage_number: number; order_index: number }
+        Insert: { id?: string; unit_id: string; name: string; stage_type: string; stage_number: number; order_index?: number }
+        Update: { id?: string; unit_id?: string; name?: string; stage_type?: string; stage_number?: number; order_index?: number }
+        Relationships: []
+      }
+      questions: {
+        Row: { id: string; stage_id: string; type: string; content: Json; order_index: number }
+        Insert: { id?: string; stage_id: string; type: string; content: Json; order_index?: number }
+        Update: { id?: string; stage_id?: string; type?: string; content?: Json; order_index?: number }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
