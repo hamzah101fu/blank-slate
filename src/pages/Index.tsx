@@ -72,13 +72,13 @@ const Index = () => {
       <div className="text-center mb-14">
         <p
           className="text-6xl mb-3 leading-none select-none"
-          style={{ color: "#D4A853", fontFamily: "Georgia, serif" }}
+          style={{ color: "#D4A853", fontFamily: "'Playfair Display', Georgia, serif" }}
         >
           گفتگو
         </p>
         <h1
           className="text-4xl font-bold tracking-tight"
-          style={{ color: "#1E2D3D" }}
+          style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}
         >
           Guftugu
         </h1>
@@ -111,9 +111,6 @@ const Index = () => {
                   backgroundColor: isSelected ? "#1E2D3D" : "#FFFFFF",
                   borderColor: isSelected ? "#1E2D3D" : "#E8E0D5",
                   color: isSelected ? "#FAF6F0" : "#1E2D3D",
-                  boxShadow: isSelected
-                    ? "0 4px 20px rgba(30,45,61,0.15)"
-                    : "0 1px 4px rgba(30,45,61,0.06)",
                 }}
               >
                 <div className="flex-1">
@@ -153,16 +150,14 @@ const Index = () => {
         <button
           disabled={!selected}
           onClick={() => {
-            if (!session) navigate("/auth");
+            if (!selected) return;
+            navigate(session ? "/course-map" : "/auth");
           }}
           className="w-full py-4 rounded-2xl font-bold text-base transition-all duration-200"
           style={{
             backgroundColor: selected ? "#D4A853" : "#E8E0D5",
             color: selected ? "#1E2D3D" : "#B0A698",
             cursor: selected ? "pointer" : "not-allowed",
-            boxShadow: selected
-              ? "0 4px 16px rgba(212,168,83,0.4)"
-              : "none",
           }}
         >
           Start Learning →

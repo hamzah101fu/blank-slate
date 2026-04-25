@@ -14,10 +14,10 @@ const Auth = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate("/", { replace: true });
+      if (session) navigate("/course-map", { replace: true });
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/", { replace: true });
+      if (session) navigate("/course-map", { replace: true });
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -75,11 +75,11 @@ const Auth = () => {
       <div className="text-center mb-10">
         <p
           className="text-5xl mb-2 leading-none select-none"
-          style={{ color: "#D4A853", fontFamily: "Georgia, serif" }}
+          style={{ color: "#D4A853", fontFamily: "'Playfair Display', Georgia, serif" }}
         >
           گفتگو
         </p>
-        <h1 className="text-3xl font-bold tracking-tight" style={{ color: "#1E2D3D" }}>
+        <h1 className="text-3xl font-bold tracking-tight" style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}>
           {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
         <p className="mt-2 text-sm" style={{ color: "#1E2D3D", opacity: 0.55 }}>
@@ -124,11 +124,10 @@ const Auth = () => {
           disabled={loading}
           className="w-full py-4 rounded-2xl font-bold text-base mt-2 transition-all"
           style={{
-            backgroundColor: "#D4A853",
-            color: "#1E2D3D",
+            backgroundColor: "#1E2D3D",
+            color: "#FAF6F0",
             cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.6 : 1,
-            boxShadow: "0 4px 16px rgba(212,168,83,0.4)",
+            opacity: loading ? 0.65 : 1,
           }}
         >
           {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
