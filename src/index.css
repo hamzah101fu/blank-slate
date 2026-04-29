@@ -1,112 +1,310 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ── Design tokens ───────────────────────────────────────── */
 
 @layer base {
   :root {
-    /* Guftugu brand palette */
-    --cream: 36 43% 96%;
-    --ink: 210 34% 18%;
-    --gold: 38 58% 58%;
+    --cream:      36 43% 96%;
+    --ink:        210 34% 18%;
+    --sky:        207 40% 60%;
+    --gold:       38 58% 58%;
+    --terracotta: 22 43% 60%;
 
-    --background: 36 43% 96%;
-    --foreground: 210 34% 18%;
+    --background:          36 43% 96%;
+    --foreground:          210 34% 18%;
+    --card:                0 0% 100%;
+    --card-foreground:     210 34% 18%;
+    --popover:             0 0% 100%;
+    --popover-foreground:  210 34% 18%;
+    --primary:             207 40% 60%;
+    --primary-foreground:  0 0% 100%;
+    --secondary:           36 30% 90%;
+    --secondary-foreground:210 34% 18%;
+    --muted:               36 30% 90%;
+    --muted-foreground:    210 20% 45%;
+    --accent:              36 30% 90%;
+    --accent-foreground:   210 34% 18%;
+    --destructive:         22 43% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border:              210 34% 18% / 0.08;
+    --input:               36 20% 86%;
+    --ring:                207 40% 60%;
+    --radius:              0.5rem;
 
-    --card: 0 0% 100%;
-    --card-foreground: 210 34% 18%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 34% 18%;
-
-    --primary: 38 58% 58%;
-    --primary-foreground: 210 34% 18%;
-
-    --secondary: 36 30% 90%;
-    --secondary-foreground: 210 34% 18%;
-
-    --muted: 36 30% 90%;
-    --muted-foreground: 210 20% 45%;
-
-    --accent: 36 30% 90%;
-    --accent-foreground: 210 34% 18%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 36 20% 86%;
-    --input: 36 20% 86%;
-    --ring: 38 58% 58%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background:          0 0% 100%;
+    --sidebar-foreground:          210 34% 18%;
+    --sidebar-primary:             210 34% 18%;
+    --sidebar-primary-foreground:  0 0% 98%;
+    --sidebar-accent:              36 30% 95%;
+    --sidebar-accent-foreground:   210 34% 18%;
+    --sidebar-border:              210 34% 18% / 0.08;
+    --sidebar-ring:                207 40% 60%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* ── Keyframe animations ─────────────────────────────────── */
+
+@keyframes page-entry {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes correct-pulse {
+  0%   { transform: scale(1);    }
+  40%  { transform: scale(1.04); }
+  100% { transform: scale(1);    }
+}
+
+@keyframes wrong-shake {
+  0%, 100% { transform: translateX(0);   }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px);  }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(6px);  }
+}
+
+@keyframes stage-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes feedback-slide {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0);    }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Animation utility classes ───────────────────────────── */
+
+.animate-page-entry    { animation: page-entry     300ms ease-out       both; }
+.animate-stage-pulse   { animation: stage-pulse      2s  ease-in-out infinite; }
+.animate-feedback-slide{ animation: feedback-slide  250ms ease-out       both; }
+.animate-correct-pulse { animation: correct-pulse   400ms ease-out       both; }
+.animate-wrong-shake   { animation: wrong-shake     300ms ease-out       both; }
+
+/* ── Form input ──────────────────────────────────────────── */
+
+.gf-input {
+  display: block;
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid rgba(30, 45, 61, 0.15);
+  border-radius: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  color: #1E2D3D;
+  outline: none;
+  transition: border 150ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.gf-input:focus {
+  border: 2px solid #6BA3C8;
+}
+.gf-input::placeholder {
+  color: rgba(30, 45, 61, 0.35);
+}
+
+/* ── Primary CTA button ──────────────────────────────────── */
+
+.gf-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+  background: #6BA3C8;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 80ms ease;
+  letter-spacing: -0.01em;
+}
+.gf-btn-primary:hover:not(:disabled) { background: #1E2D3D; }
+.gf-btn-primary:active:not(:disabled) { transform: scale(0.97); }
+.gf-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.gf-btn-primary:focus-visible { outline: 2px solid #6BA3C8; outline-offset: 2px; }
+
+/* ── Secondary / outline button ─────────────────────────── */
+
+.gf-btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+  background: #ffffff;
+  color: #1E2D3D;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid rgba(30, 45, 61, 0.15);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 80ms ease;
+}
+.gf-btn-secondary:hover:not(:disabled) {
+  background: rgba(30, 45, 61, 0.04);
+  border-color: rgba(30, 45, 61, 0.25);
+}
+.gf-btn-secondary:active:not(:disabled) { transform: scale(0.97); }
+.gf-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Card ────────────────────────────────────────────────── */
+
+.gf-card {
+  background: #ffffff;
+  border: 1px solid rgba(30, 45, 61, 0.08);
+  border-radius: 16px;
+}
+
+/* ── Language selector card ──────────────────────────────── */
+
+.gf-lang-card {
+  background: #ffffff;
+  border: 1px solid rgba(30, 45, 61, 0.1);
+  border-radius: 24px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.gf-lang-card:hover { transform: translateY(-2px); }
+.gf-lang-card:active { transform: scale(0.97); }
+.gf-lang-card.selected {
+  border: 2px solid #6BA3C8;
+  background: rgba(107, 163, 200, 0.06);
+}
+
+/* ── Stage icon button ───────────────────────────────────── */
+
+.gf-stage-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: transform 150ms ease;
+  flex-shrink: 0;
+  position: relative;
+}
+.gf-stage-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.gf-stage-btn:active:not(:disabled) { transform: scale(0.95); }
+.gf-stage-btn:disabled { cursor: default; }
+
+/* Gold ring for current stage */
+.gf-stage-btn.current::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #D4A853;
+  pointer-events: none;
+}
+
+/* ── Answer option button ────────────────────────────────── */
+
+.gf-answer-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1px solid rgba(30, 45, 61, 0.12);
+  border-radius: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  color: #1E2D3D;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 80ms ease;
+}
+.gf-answer-btn:hover:not(:disabled) {
+  background: rgba(30, 45, 61, 0.04);
+  border-color: rgba(30, 45, 61, 0.2);
+}
+.gf-answer-btn:active:not(:disabled) { transform: scale(0.98); }
+.gf-answer-btn.selected {
+  border: 2px solid #6BA3C8;
+  background: rgba(107, 163, 200, 0.06);
+}
+.gf-answer-btn.correct {
+  border: 2px solid #D4A853;
+  background: rgba(212, 168, 83, 0.06);
+}
+.gf-answer-btn.wrong {
+  border: 2px solid #C17B4A;
+  background: rgba(193, 123, 74, 0.06);
+}
+
+/* ── Progress bar ────────────────────────────────────────── */
+
+.gf-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(30, 45, 61, 0.08);
+  overflow: hidden;
+}
+.gf-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #6BA3C8;
+  transition: width 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Focus ring ──────────────────────────────────────────── */
+
+.gf-focus-ring:focus-visible {
+  outline: 2px solid #6BA3C8;
+  outline-offset: 2px;
+}
+
+/* ── Text link ───────────────────────────────────────────── */
+
+.gf-link {
+  color: #6BA3C8;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  transition: text-decoration 150ms ease;
+}
+.gf-link:hover { text-decoration: underline; }
