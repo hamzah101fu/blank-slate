@@ -1,10 +1,11 @@
 import { useEffect } from "react";
-import { useFieldArray, UseFormReturn } from "react-hook-form";
+import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { StrokeCanvas } from "./StrokeCanvas";
 import type { QuestionType } from "./adminTypes";
 
 // ── Shared styles ──────────────────────────────────────────
@@ -61,6 +62,9 @@ function OptionsArray({ form, name, label, urdu = false }: {
 // ── Per-type field components ──────────────────────────────
 
 function TraceLetterFields({ form }: { form: UseFormReturn<any> }) {
+  const tolerance = useWatch({ control: form.control, name: "tolerance" }) ?? 3;
+  const referencePoints = useWatch({ control: form.control, name: "reference_points" }) ?? [];
+
   return (
     <>
       <FormField control={form.control} name="letter" render={({ field }) => (
@@ -77,6 +81,38 @@ function TraceLetterFields({ form }: { form: UseFormReturn<any> }) {
           <FormMessage />
         </FormItem>
       )} />
+
+      <FormItem>
+        <FieldLabel>Reference Stroke</FieldLabel>
+        <p style={{ fontSize: 11, color: "#1E2D3D", opacity: 0.45, marginBottom: 8 }}>
+          Draw the correct stroke path once. Users' traces will be compared to this.
+        </p>
+        <StrokeCanvas
+          value={referencePoints}
+          onChange={(pts) => form.setValue("reference_points", pts)}
+        />
+      </FormItem>
+
+      <FormItem>
+        <FieldLabel>Tolerance (1 = strict, 5 = lenient)</FieldLabel>
+        <div className="flex items-center gap-3 mt-1">
+          <input
+            type="range"
+            min={1}
+            max={5}
+            step={1}
+            value={tolerance}
+            onChange={(e) => form.setValue("tolerance", Number(e.target.value))}
+            style={{ accentColor: "#D4A853", flex: 1 }}
+          />
+          <span style={{ fontWeight: 700, color: "#1E2D3D", minWidth: 16, textAlign: "center" }}>
+            {tolerance}
+          </span>
+        </div>
+        <p style={{ fontSize: 11, color: "#1E2D3D", opacity: 0.4, marginTop: 4 }}>
+          Controls how strictly the user's stroke is matched using DTW distance.
+        </p>
+      </FormItem>
     </>
   );
 }
@@ -352,7 +388,12 @@ export function QuestionFieldsForType({ type, form, uploadFile, uploading }: Dis
 export function buildContent(type: QuestionType, values: Record<string, any>): Record<string, unknown> {
   switch (type) {
     case "trace_letter":
-      return { letter: values.letter, language: values.language };
+      return {
+        letter: values.letter,
+        language: values.language,
+        reference_points: values.reference_points ?? [],
+        tolerance: values.tolerance ?? 3,
+      };
     case "find_letter":
       return {
         roman: values.roman,

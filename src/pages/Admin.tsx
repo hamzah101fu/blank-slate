@@ -1,23 +1,29 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminSidebar } from "./admin/AdminSidebar";
 import { QuestionEditor } from "./admin/QuestionEditor";
-import type { StageType } from "./admin/adminTypes";
-import { STAGE_LABELS } from "./admin/adminTypes";
+import { AdminUsers } from "./admin/AdminUsers";
+import type { StageType, AdminRole } from "./admin/adminTypes";
+import { STAGE_LABELS, getAdminRole } from "./admin/adminTypes";
 
 export default function Admin() {
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState(false);
+  const [adminRole, setAdminRole] = useState<AdminRole>("content_admin");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
   const [selectedStageType, setSelectedStageType] = useState<StageType | null>(null);
-  const qc = useQueryClient();
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [selectedView, setSelectedView] = useState<"stage" | "adminUsers">("stage");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/auth"); return; }
-      if (!session.user.user_metadata?.is_admin) { navigate("/course-map"); return; }
+      const role = getAdminRole(session.user as any);
+      if (!role) { navigate("/course-map"); return; }
+      setAdminRole(role);
+      setCurrentUserId(session.user.id);
       setAuthorized(true);
     });
   }, [navigate]);
@@ -27,9 +33,19 @@ export default function Admin() {
     navigate("/auth");
   };
 
-  const handleSelectStage = (id: string, type: StageType) => {
+  const handleSelectStage = (id: string, type: StageType, unitId?: string) => {
     setSelectedStageId(id);
     setSelectedStageType(type);
+    if (unitId) setSelectedUnitId(unitId);
+    setSelectedView("stage");
+  };
+
+  const handleSelectView = (view: "stage" | "adminUsers") => {
+    setSelectedView(view);
+    if (view === "adminUsers") {
+      setSelectedStageId(null);
+      setSelectedStageType(null);
+    }
   };
 
   if (!authorized) return null;
@@ -42,16 +58,20 @@ export default function Admin() {
         style={{ backgroundColor: "#FAF6F0", borderBottom: "1.5px solid #E8E0D5", zIndex: 40 }}
       >
         <div className="flex items-baseline gap-2">
-          <span
-            style={{ color: "#D4A853", fontFamily: "'Playfair Display', Georgia, serif", fontSize: 22, fontWeight: 700 }}
-          >
+          <span style={{ color: "#D4A853", fontFamily: "'Playfair Display', Georgia, serif", fontSize: 22, fontWeight: 700 }}>
             گفتگو
           </span>
-          <span
-            className="font-bold text-base"
-            style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
+          <span className="font-bold text-base" style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}>
             Guftugu Admin
+          </span>
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded-full ml-2"
+            style={{
+              backgroundColor: adminRole === "super_admin" ? "#FFF8E1" : "#E8F0F8",
+              color: adminRole === "super_admin" ? "#C17B4A" : "#1E2D3D",
+            }}
+          >
+            {adminRole === "super_admin" ? "Super Admin" : "Content Admin"}
           </span>
         </div>
         <button
@@ -65,21 +85,28 @@ export default function Admin() {
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <AdminSidebar
           selectedStageId={selectedStageId}
           onSelectStage={handleSelectStage}
+          adminRole={adminRole}
+          selectedView={selectedView}
+          onSelectView={handleSelectView}
         />
 
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-8" style={{ backgroundColor: "#FAF6F0" }}>
-          {selectedStageId && selectedStageType ? (
+          {selectedView === "adminUsers" ? (
+            <AdminUsers currentUserId={currentUserId} currentRole={adminRole} />
+          ) : selectedStageId && selectedStageType ? (
             <div>
-              {/* Stage breadcrumb */}
               <p className="text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: "#6BA3C8" }}>
                 {STAGE_LABELS[selectedStageType]}
               </p>
-              <QuestionEditor stageId={selectedStageId} stageType={selectedStageType} />
+              <QuestionEditor
+                stageId={selectedStageId}
+                stageType={selectedStageType}
+                unitId={selectedUnitId ?? ""}
+              />
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">

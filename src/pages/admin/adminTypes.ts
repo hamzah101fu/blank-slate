@@ -1,6 +1,26 @@
 export const STAGE_TYPES = ["aghaaz", "suno", "samjho", "pehchano", "dohrao", "guftugu"] as const;
 export type StageType = typeof STAGE_TYPES[number];
 
+export type ContentStatus = "draft" | "published";
+export type AdminRole = "super_admin" | "content_admin";
+
+export const REQUIRED_QUESTION_COUNTS: Record<StageType, number> = {
+  aghaaz:   10,
+  suno:      5,
+  samjho:   15,
+  pehchano: 10,
+  dohrao:    0,
+  guftugu:   2,
+};
+
+export function getAdminRole(user: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> }): AdminRole | null {
+  const meta = (user.app_metadata ?? user.user_metadata ?? {}) as Record<string, unknown>;
+  if (meta.role === "super_admin") return "super_admin";
+  if (meta.role === "content_admin") return "content_admin";
+  if (meta.is_admin) return "content_admin";
+  return null;
+}
+
 export const STAGE_LABELS: Record<StageType, string> = {
   aghaaz:   "Aghaaz",
   suno:     "Suno",
@@ -55,6 +75,7 @@ export interface AdminCourse {
   title: string;
   description: string | null;
   order_index: number;
+  status?: ContentStatus;
 }
 
 export interface AdminUnit {
@@ -62,6 +83,7 @@ export interface AdminUnit {
   course_id: string;
   title: string;
   order_index: number;
+  status?: ContentStatus;
 }
 
 export interface AdminStage {
@@ -71,6 +93,7 @@ export interface AdminStage {
   stage_type: StageType;
   stage_number: number;
   order_index: number;
+  status?: ContentStatus;
 }
 
 export interface AdminQuestion {
@@ -79,6 +102,7 @@ export interface AdminQuestion {
   type: QuestionType;
   content: Record<string, unknown>;
   order_index: number;
+  status?: ContentStatus;
 }
 
 // Stage auto-creation definitions

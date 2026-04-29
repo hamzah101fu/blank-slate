@@ -12,7 +12,7 @@ import { Reading } from "./questions/Reading";
 
 interface Question {
   id: string;
-  question_type: string;
+  type: string;
   content: Record<string, any>;
 }
 
@@ -48,7 +48,7 @@ function QuestionRenderer({
   feedback: FeedbackState;
 }) {
   const props = { content: question.content, onAnswer, feedback };
-  switch (question.question_type) {
+  switch (question.type) {
     case "trace_letter":
       return <TraceLetter {...props} />;
     case "find_letter":
@@ -70,7 +70,7 @@ function QuestionRenderer({
     default:
       return (
         <div className="text-center" style={{ color: "#1E2D3D", opacity: 0.5 }}>
-          Unknown question type: {question.question_type}
+          Unknown question type: {question.type}
         </div>
       );
   }

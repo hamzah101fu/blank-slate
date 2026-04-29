@@ -13,7 +13,7 @@ interface StageInfo {
 
 interface Question {
   id: string;
-  question_type: string;
+  type: string;
   content: Record<string, any>;
   order_index: number;
 }
@@ -118,7 +118,8 @@ export default function Stage() {
 
       const { data: qData, error: qErr } = await supabase
         .from("questions")
-        .select("id, question_type, content, order_index")
+        .select("id, type, content, order_index")
+        // .eq("status", "published")  // Uncomment after running the SQL migration
         .eq("stage_id", stageId)
         .order("order_index");
 

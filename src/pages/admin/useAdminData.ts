@@ -7,8 +7,9 @@ import type {
   AdminStage,
   AdminQuestion,
   QuestionType,
+  ContentStatus,
 } from "./adminTypes";
-import { STAGE_DEFS } from "./adminTypes";
+import { STAGE_DEFS, REQUIRED_QUESTION_COUNTS } from "./adminTypes";
 
 // ── Query hooks ────────────────────────────────────────────
 
@@ -207,6 +208,147 @@ export async function reorderQuestions(
     supabase.from("questions").update({ order_index: i }).eq("id", q.id)
   );
   await Promise.all(updates);
+}
+
+export async function duplicateQuestion(q: AdminQuestion, newOrderIndex: number) {
+  const { error } = await supabase.from("questions").insert({
+    stage_id: q.stage_id,
+    type: q.type,
+    content: q.content as never,
+    order_index: newOrderIndex,
+  });
+  if (error) throw error;
+}
+
+// ── Publish mutations ──────────────────────────────────────
+
+export async function setQuestionStatus(id: string, status: ContentStatus) {
+  const { error } = await supabase.from("questions").update({ status } as never).eq("id", id);
+  if (error) throw error;
+}
+
+export async function setStageStatus(id: string, status: ContentStatus) {
+  const { error } = await supabase.from("stages").update({ status } as never).eq("id", id);
+  if (error) throw error;
+}
+
+export async function setUnitStatus(id: string, status: ContentStatus) {
+  const { error } = await supabase.from("units").update({ status } as never).eq("id", id);
+  if (error) throw error;
+}
+
+// Validate then bulk-publish a unit (unit + all stages + all questions).
+// Returns an array of stage names that fail validation (empty = OK to publish).
+export async function publishUnit(unitId: string): Promise<string[]> {
+  // Fetch stages
+  const { data: stages, error: stageErr } = await supabase
+    .from("stages")
+    .select("id, name, stage_type")
+    .eq("unit_id", unitId);
+  if (stageErr) throw stageErr;
+
+  // Count questions per stage
+  const stageIds = (stages ?? []).map((s) => s.id);
+  const { data: qs } = await supabase
+    .from("questions")
+    .select("stage_id")
+    .in("stage_id", stageIds);
+
+  const counts: Record<string, number> = {};
+  for (const q of qs ?? []) {
+    counts[q.stage_id] = (counts[q.stage_id] ?? 0) + 1;
+  }
+
+  const failing = (stages ?? []).filter((s) => {
+    const req = REQUIRED_QUESTION_COUNTS[s.stage_type as keyof typeof REQUIRED_QUESTION_COUNTS] ?? 0;
+    return req > 0 && (counts[s.id] ?? 0) < req;
+  }).map((s) => s.name);
+
+  if (failing.length > 0) return failing;
+
+  // Publish unit
+  await supabase.from("units").update({ status: "published" } as never).eq("id", unitId);
+
+  // Publish all stages
+  if (stageIds.length > 0) {
+    await supabase.from("stages").update({ status: "published" } as never).in("id", stageIds);
+    // Publish all questions in those stages
+    await supabase.from("questions").update({ status: "published" } as never).in("stage_id", stageIds);
+  }
+
+  return [];
+}
+
+export async function unpublishUnit(unitId: string) {
+  const { data: stages } = await supabase.from("stages").select("id").eq("unit_id", unitId);
+  const stageIds = (stages ?? []).map((s) => s.id);
+
+  await supabase.from("units").update({ status: "draft" } as never).eq("id", unitId);
+  if (stageIds.length > 0) {
+    await supabase.from("stages").update({ status: "draft" } as never).in("id", stageIds);
+    await supabase.from("questions").update({ status: "draft" } as never).in("stage_id", stageIds);
+  }
+}
+
+// ── Stage question counts (for sidebar badges) ─────────────
+
+export function useStageQuestionCounts(unitId: string | null) {
+  return useQuery<Record<string, number>>({
+    queryKey: ["admin", "stageCounts", unitId],
+    enabled: !!unitId,
+    queryFn: async () => {
+      const { data: stages } = await supabase.from("stages").select("id").eq("unit_id", unitId!);
+      const stageIds = (stages ?? []).map((s) => s.id);
+      if (stageIds.length === 0) return {};
+
+      const { data: qs } = await supabase
+        .from("questions")
+        .select("stage_id")
+        .in("stage_id", stageIds);
+
+      const counts: Record<string, number> = {};
+      for (const q of qs ?? []) {
+        counts[q.stage_id] = (counts[q.stage_id] ?? 0) + 1;
+      }
+      return counts;
+    },
+  });
+}
+
+// ── Admin users (super_admin only) ─────────────────────────
+
+export interface AdminUserRow {
+  id: string;
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  role: "super_admin" | "content_admin";
+  created_at: string;
+}
+
+export function useAdminUsers() {
+  return useQuery<AdminUserRow[]>({
+    queryKey: ["admin", "adminUsers"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("admin_users" as never).select("*").order("created_at");
+      if (error) throw error;
+      return (data ?? []) as AdminUserRow[];
+    },
+  });
+}
+
+export async function inviteAdminUser(email: string, role: "super_admin" | "content_admin", invitedBy: string) {
+  const { error } = await supabase.from("admin_invites" as never).insert({
+    email,
+    role,
+    invited_by: invitedBy,
+  });
+  if (error) throw error;
+}
+
+export async function removeAdminUser(userId: string) {
+  const { error } = await supabase.from("admin_users" as never).delete().eq("user_id", userId);
+  if (error) throw error;
 }
 
 export { useQueryClient };

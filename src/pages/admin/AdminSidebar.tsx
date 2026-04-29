@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ChevronRight, ChevronDown, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Trash2, AlertTriangle, Users } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -13,28 +13,24 @@ import { toast } from "sonner";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import {
   useLanguages, useCourses, useUnits, useStages,
+  useStageQuestionCounts,
   createLanguage, deleteLanguage,
   createCourse, deleteCourse,
   createUnit, deleteUnit,
+  setUnitStatus, publishUnit, unpublishUnit,
 } from "./useAdminData";
-import type { StageType } from "./adminTypes";
-import { STAGE_LABELS } from "./adminTypes";
+import type { StageType, AdminRole } from "./adminTypes";
+import { STAGE_LABELS, REQUIRED_QUESTION_COUNTS } from "./adminTypes";
 
-// ── Shared form styles ─────────────────────────────────────
+// ── Shared styles ──────────────────────────────────────────
 
 const inputStyle = { backgroundColor: "white", borderColor: "#E8E0D5", color: "#1E2D3D" };
 
 const SaveButton = ({ loading, label = "Save" }: { loading: boolean; label?: string }) => (
-  <Button
-    type="submit"
-    disabled={loading}
-    style={{ backgroundColor: "#D4A853", color: "#1E2D3D", border: "none", fontWeight: 700 }}
-  >
+  <Button type="submit" disabled={loading} style={{ backgroundColor: "#D4A853", color: "#1E2D3D", border: "none", fontWeight: 700 }}>
     {loading ? "Saving…" : label}
   </Button>
 );
-
-// ── Small icon buttons ─────────────────────────────────────
 
 function IconBtn({ onClick, children, title }: { onClick?: () => void; children: React.ReactNode; title?: string }) {
   return (
@@ -49,7 +45,7 @@ function IconBtn({ onClick, children, title }: { onClick?: () => void; children:
   );
 }
 
-// ── New Language dialog ────────────────────────────────────
+// ── Dialogs ────────────────────────────────────────────────
 
 const langSchema = z.object({ name: z.string().min(1), code: z.string().min(1).max(20) });
 type LangForm = z.infer<typeof langSchema>;
@@ -84,9 +80,7 @@ function NewLanguageDialog() {
       </DialogTrigger>
       <DialogContent style={{ backgroundColor: "#FAF6F0", border: "1.5px solid #E8E0D5" }}>
         <DialogHeader>
-          <DialogTitle style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}>
-            New Language
-          </DialogTitle>
+          <DialogTitle style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}>New Language</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-2">
@@ -111,8 +105,6 @@ function NewLanguageDialog() {
     </Dialog>
   );
 }
-
-// ── New Course dialog ──────────────────────────────────────
 
 const courseSchema = z.object({ title: z.string().min(1), description: z.string() });
 type CourseForm = z.infer<typeof courseSchema>;
@@ -167,8 +159,6 @@ function NewCourseDialog({ languageId }: { languageId: string }) {
   );
 }
 
-// ── New Unit dialog ────────────────────────────────────────
-
 const unitSchema = z.object({ title: z.string().min(1) });
 type UnitForm = z.infer<typeof unitSchema>;
 
@@ -208,9 +198,7 @@ function NewUnitDialog({ courseId }: { courseId: string }) {
                 <FormMessage />
               </FormItem>
             )} />
-            <p className="text-xs" style={{ color: "#1E2D3D", opacity: 0.45 }}>
-              6 stages (Aghaaz → Guftugu) will be created automatically.
-            </p>
+            <p className="text-xs" style={{ color: "#1E2D3D", opacity: 0.45 }}>6 stages (Aghaaz → Guftugu) will be created automatically.</p>
             <SaveButton loading={loading} label="Create Unit" />
           </form>
         </Form>
@@ -219,7 +207,7 @@ function NewUnitDialog({ courseId }: { courseId: string }) {
   );
 }
 
-// ── Tree node shared styles ────────────────────────────────
+// ── Tree node ──────────────────────────────────────────────
 
 function TreeRow({
   depth,
@@ -229,6 +217,7 @@ function TreeRow({
   actions,
   selected,
   onClick,
+  suffix,
 }: {
   depth: number;
   label: string;
@@ -237,6 +226,7 @@ function TreeRow({
   actions?: React.ReactNode;
   selected?: boolean;
   onClick?: () => void;
+  suffix?: React.ReactNode;
 }) {
   return (
     <div
@@ -258,6 +248,7 @@ function TreeRow({
       <span className="flex-1 text-sm truncate" style={{ color: selected ? "#FAF6F0" : "#1E2D3D", fontWeight: selected ? 600 : 400 }}>
         {label}
       </span>
+      {suffix}
       <span className="opacity-0 group-hover:opacity-100 flex items-center" style={{ color: selected ? "#FAF6F0" : "#1E2D3D" }}>
         {actions}
       </span>
@@ -265,78 +256,194 @@ function TreeRow({
   );
 }
 
-// ── Main sidebar ───────────────────────────────────────────
+// ── Stage row (with count badge + warning) ─────────────────
 
-interface Props {
-  selectedStageId: string | null;
-  onSelectStage: (stageId: string, stageType: StageType) => void;
-}
-
-function StageRows({ unitId, selectedStageId, onSelectStage }: {
+function StageRows({
+  unitId,
+  selectedStageId,
+  onSelectStage,
+  counts,
+}: {
   unitId: string;
   selectedStageId: string | null;
-  onSelectStage: (id: string, type: StageType) => void;
+  onSelectStage: (id: string, type: StageType, unitId?: string) => void;
+  counts: Record<string, number>;
 }) {
   const { data: stages = [] } = useStages(unitId);
-  return (
-    <>
-      {stages.map((stage) => (
-        <TreeRow
-          key={stage.id}
-          depth={3}
-          label={STAGE_LABELS[stage.stage_type as StageType]}
-          selected={selectedStageId === stage.id}
-          onClick={() => onSelectStage(stage.id, stage.stage_type as StageType)}
-        />
-      ))}
-    </>
-  );
-}
-
-function UnitRows({ courseId, selectedStageId, onSelectStage }: {
-  courseId: string;
-  selectedStageId: string | null;
-  onSelectStage: (id: string, type: StageType) => void;
-}) {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const qc = useQueryClient();
-  const { data: units = [] } = useUnits(courseId);
 
   return (
     <>
-      {units.map((unit) => (
-        <div key={unit.id}>
+      {stages.map((stage) => {
+        const type = stage.stage_type as StageType;
+        const required = REQUIRED_QUESTION_COUNTS[type];
+        const count = counts[stage.id] ?? 0;
+        const isUnderfull = required > 0 && count < required;
+
+        return (
           <TreeRow
-            depth={2}
-            label={unit.title}
-            expanded={!!expanded[unit.id]}
-            onToggle={() => setExpanded((p) => ({ ...p, [unit.id]: !p[unit.id] }))}
-            actions={
-              <>
-                <DeleteConfirmDialog
-                  trigger={<span><IconBtn title="Delete unit"><Trash2 size={12} /></IconBtn></span>}
-                  itemLabel={unit.title}
-                  onConfirm={async () => {
-                    await deleteUnit(unit.id);
-                    qc.invalidateQueries({ queryKey: ["admin", "units", courseId] });
-                  }}
-                />
-              </>
+            key={stage.id}
+            depth={3}
+            label={STAGE_LABELS[type]}
+            selected={selectedStageId === stage.id}
+            onClick={() => onSelectStage(stage.id, type, unitId)}
+            suffix={
+              <span className="flex items-center gap-1 ml-1">
+                {isUnderfull && (
+                  <AlertTriangle
+                    size={11}
+                    style={{ color: "#D4A853", flexShrink: 0 }}
+                    title={`Needs ${required - count} more question${required - count !== 1 ? "s" : ""}`}
+                  />
+                )}
+                {required > 0 && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: selectedStageId === stage.id ? "#FAF6F0" : isUnderfull ? "#C17B4A" : "#2E7D32",
+                      opacity: selectedStageId === stage.id ? 0.7 : 1,
+                    }}
+                  >
+                    {count}/{required}
+                  </span>
+                )}
+              </span>
             }
           />
-          {expanded[unit.id] && (
-            <StageRows unitId={unit.id} selectedStageId={selectedStageId} onSelectStage={onSelectStage} />
-          )}
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }
 
-function CourseRows({ languageId, selectedStageId, onSelectStage }: {
+// ── Unit row (self-contained with stages + counts) ─────────
+
+function UnitRow({
+  unit,
+  courseId,
+  selectedStageId,
+  onSelectStage,
+}: {
+  unit: { id: string; title: string; order_index: number; status?: string };
+  courseId: string;
+  selectedStageId: string | null;
+  onSelectStage: (id: string, type: StageType, unitId?: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [publishingUnit, setPublishingUnit] = useState(false);
+  const qc = useQueryClient();
+  const { data: stages = [] } = useStages(unit.id);
+  const { data: counts = {} } = useStageQuestionCounts(unit.id);
+
+  const hasAnyUnderfull = stages.some((s) => {
+    const req = REQUIRED_QUESTION_COUNTS[s.stage_type as StageType];
+    return req > 0 && (counts[s.id] ?? 0) < req;
+  });
+
+  const isPublished = unit.status === "published";
+
+  const handlePublishUnit = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPublishingUnit(true);
+    try {
+      if (isPublished) {
+        await unpublishUnit(unit.id);
+        qc.invalidateQueries({ queryKey: ["admin", "units", courseId] });
+        toast.success("Unit unpublished.");
+      } else {
+        const failing = await publishUnit(unit.id);
+        if (failing.length > 0) {
+          toast.error(`Cannot publish: stages below required count — ${failing.join(", ")}.`);
+        } else {
+          qc.invalidateQueries({ queryKey: ["admin", "units", courseId] });
+          toast.success("Unit published (all stages and questions included).");
+        }
+      }
+    } catch (err: any) {
+      if (err?.message?.includes("column") || err?.code === "42703") {
+        toast.error("Run the SQL migration to enable publishing.");
+      } else {
+        toast.error("Failed to update publish status.");
+      }
+    } finally {
+      setPublishingUnit(false);
+    }
+  };
+
+  return (
+    <div>
+      <TreeRow
+        depth={2}
+        label={unit.title}
+        expanded={expanded}
+        onToggle={() => setExpanded((p) => !p)}
+        suffix={
+          <span className="flex items-center gap-1 ml-1">
+            {hasAnyUnderfull && !isPublished && (
+              <AlertTriangle size={11} style={{ color: "#D4A853" }} title="Some stages need more questions" />
+            )}
+            {unit.status && (
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  padding: "1px 5px",
+                  borderRadius: 999,
+                  backgroundColor: isPublished ? "#E8F5E9" : "#F5F5F5",
+                  color: isPublished ? "#2E7D32" : "#9E9E9E",
+                }}
+              >
+                {isPublished ? "LIVE" : "DRAFT"}
+              </span>
+            )}
+          </span>
+        }
+        actions={
+          <>
+            <button
+              onClick={handlePublishUnit}
+              disabled={publishingUnit || (!isPublished && hasAnyUnderfull)}
+              title={hasAnyUnderfull && !isPublished ? "Fix underfull stages first" : isPublished ? "Unpublish unit" : "Publish unit"}
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                padding: "2px 6px",
+                borderRadius: 6,
+                border: "none",
+                cursor: publishingUnit || (!isPublished && hasAnyUnderfull) ? "not-allowed" : "pointer",
+                backgroundColor: isPublished ? "#FBE9E7" : "#E8F5E9",
+                color: isPublished ? "#C17B4A" : "#2E7D32",
+                opacity: !isPublished && hasAnyUnderfull ? 0.4 : 1,
+              }}
+            >
+              {publishingUnit ? "…" : isPublished ? "Unpublish" : "Publish"}
+            </button>
+            <DeleteConfirmDialog
+              trigger={<span><IconBtn title="Delete unit"><Trash2 size={12} /></IconBtn></span>}
+              itemLabel={unit.title}
+              onConfirm={async () => {
+                await deleteUnit(unit.id);
+                qc.invalidateQueries({ queryKey: ["admin", "units", courseId] });
+              }}
+            />
+          </>
+        }
+      />
+      {expanded && (
+        <StageRows unitId={unit.id} selectedStageId={selectedStageId} onSelectStage={onSelectStage} counts={counts} />
+      )}
+    </div>
+  );
+}
+
+function CourseRows({
+  languageId,
+  selectedStageId,
+  onSelectStage,
+}: {
   languageId: string;
   selectedStageId: string | null;
-  onSelectStage: (id: string, type: StageType) => void;
+  onSelectStage: (id: string, type: StageType, unitId?: string) => void;
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
@@ -366,7 +473,10 @@ function CourseRows({ languageId, selectedStageId, onSelectStage }: {
             }
           />
           {expanded[course.id] && (
-            <UnitRows courseId={course.id} selectedStageId={selectedStageId} onSelectStage={onSelectStage} />
+            <div>
+              {/* Load units per course via UnitRows */}
+              <UnitList courseId={course.id} selectedStageId={selectedStageId} onSelectStage={onSelectStage} />
+            </div>
           )}
         </div>
       ))}
@@ -374,7 +484,42 @@ function CourseRows({ languageId, selectedStageId, onSelectStage }: {
   );
 }
 
-export function AdminSidebar({ selectedStageId, onSelectStage }: Props) {
+function UnitList({
+  courseId,
+  selectedStageId,
+  onSelectStage,
+}: {
+  courseId: string;
+  selectedStageId: string | null;
+  onSelectStage: (id: string, type: StageType, unitId?: string) => void;
+}) {
+  const { data: units = [] } = useUnits(courseId);
+  return (
+    <>
+      {units.map((unit) => (
+        <UnitRow
+          key={unit.id}
+          unit={unit}
+          courseId={courseId}
+          selectedStageId={selectedStageId}
+          onSelectStage={onSelectStage}
+        />
+      ))}
+    </>
+  );
+}
+
+// ── Main sidebar ───────────────────────────────────────────
+
+interface Props {
+  selectedStageId: string | null;
+  onSelectStage: (stageId: string, stageType: StageType, unitId?: string) => void;
+  adminRole: AdminRole;
+  selectedView: "stage" | "adminUsers";
+  onSelectView: (view: "stage" | "adminUsers") => void;
+}
+
+export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, selectedView, onSelectView }: Props) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const qc = useQueryClient();
   const { data: languages = [] } = useLanguages();
@@ -387,6 +532,7 @@ export function AdminSidebar({ selectedStageId, onSelectStage }: Props) {
       <div className="p-3 pb-2" style={{ borderBottom: "1px solid #E8E0D5" }}>
         <NewLanguageDialog />
       </div>
+
       <ScrollArea className="flex-1 p-2">
         {languages.map((lang) => (
           <div key={lang.id}>
@@ -420,6 +566,26 @@ export function AdminSidebar({ selectedStageId, onSelectStage }: Props) {
           </p>
         )}
       </ScrollArea>
+
+      {/* Bottom nav — Admin Users (super_admin only) */}
+      {adminRole === "super_admin" && (
+        <div style={{ borderTop: "1px solid #E8E0D5", padding: "8px" }}>
+          <button
+            onClick={() => onSelectView(selectedView === "adminUsers" ? "stage" : "adminUsers")}
+            className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm transition-colors"
+            style={{
+              backgroundColor: selectedView === "adminUsers" ? "#1E2D3D" : "transparent",
+              color: selectedView === "adminUsers" ? "#FAF6F0" : "#1E2D3D",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 500,
+            }}
+          >
+            <Users size={14} />
+            Admin Users
+          </button>
+        </div>
+      )}
     </div>
   );
 }

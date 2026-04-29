@@ -108,13 +108,14 @@ const CourseMap = () => {
       return;
     }
 
-    // Fetch courses for language
+    // Fetch courses for language (published only)
     const { data: courseData } = await supabase
       .from("courses")
       .select("id")
       .eq("language_id", langData.id)
       .order("order_index")
-      .limit(1);
+      .limit(1)
+      // .eq("status", "published")  // Uncomment after running the SQL migration
 
     if (!courseData || courseData.length === 0) {
       setUsingFallback(true);
@@ -124,11 +125,12 @@ const CourseMap = () => {
 
     const courseId = courseData[0].id;
 
-    // Fetch units
+    // Fetch units (published only — uncomment after running the SQL migration)
     const { data: unitData } = await supabase
       .from("units")
       .select("id, name, order_index")
       .eq("course_id", courseId)
+      // .eq("status", "published")
       .order("order_index");
 
     if (!unitData || unitData.length === 0) {
@@ -139,11 +141,12 @@ const CourseMap = () => {
 
     const unitIds = unitData.map((u) => u.id);
 
-    // Fetch all stages for these units
+    // Fetch all stages for these units (published only — uncomment after running the SQL migration)
     const { data: stageData } = await supabase
       .from("stages")
       .select("id, name, stage_type, stage_number, order_index, unit_id")
       .in("unit_id", unitIds)
+      // .eq("status", "published")
       .order("order_index");
 
     // Group stages by unit
