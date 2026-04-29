@@ -4,6 +4,66 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "@/hooks/use-toast";
 
+// ── Decorative components ──────────────────────────────────
+
+function HorizontalGeoBorder() {
+  return (
+    <svg width="100%" height="20" aria-hidden="true" style={{ display: "block" }}>
+      <defs>
+        <pattern id="geo-auth-h" x="0" y="0" width="48" height="20" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="10" x2="48" y2="10" stroke="#1E2D3D" strokeWidth="0.75" strokeOpacity="0.18" />
+          <path d="M 24 5 L 29 10 L 24 15 L 19 10 Z" stroke="#1E2D3D" strokeWidth="0.75" strokeOpacity="0.18" fill="#FAF6F0" />
+          <circle cx="0"  cy="10" r="1.5" fill="#1E2D3D" fillOpacity="0.18" />
+          <circle cx="48" cy="10" r="1.5" fill="#1E2D3D" fillOpacity="0.18" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="20" fill="url(#geo-auth-h)" />
+    </svg>
+  );
+}
+
+function VerticalGeoBorder() {
+  return (
+    <svg
+      width="24"
+      height="100%"
+      aria-hidden="true"
+      style={{ position: "absolute", right: 0, top: 0, bottom: 0, display: "block" }}
+    >
+      <defs>
+        <pattern id="geo-auth-v" x="0" y="0" width="24" height="48" patternUnits="userSpaceOnUse">
+          <line x1="12" y1="0" x2="12" y2="48" stroke="#1E2D3D" strokeWidth="0.75" strokeOpacity="0.15" />
+          <path d="M 7 24 L 12 19 L 17 24 L 12 29 Z" stroke="#1E2D3D" strokeWidth="0.75" strokeOpacity="0.15" fill="#FAF6F0" />
+          <circle cx="12" cy="0"  r="1.5" fill="#1E2D3D" fillOpacity="0.15" />
+          <circle cx="12" cy="48" r="1.5" fill="#1E2D3D" fillOpacity="0.15" />
+        </pattern>
+      </defs>
+      <rect width="24" height="100%" fill="url(#geo-auth-v)" />
+    </svg>
+  );
+}
+
+// ── Error message component ────────────────────────────────
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p
+      style={{
+        fontFamily: "'Inter', system-ui, sans-serif",
+        fontSize: 13,
+        color: "#C17B4A",
+        marginTop: 4,
+        animation: "page-entry 200ms ease-out both",
+      }}
+    >
+      {message}
+    </p>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────
+
 const Auth = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -67,93 +127,124 @@ const Auth = () => {
     }
   };
 
-  return (
+  const formPanel = (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 py-16"
-      style={{ backgroundColor: "#FAF6F0" }}
+      className="animate-page-entry"
+      style={{ width: "100%", maxWidth: 360 }}
     >
-      <div className="text-center mb-10">
+      {/* Logo (mobile: visible, desktop: hidden — shown in left panel instead) */}
+      <div className="md:hidden text-center mb-8">
         <p
-          className="text-5xl mb-2 leading-none select-none"
-          style={{ color: "#D4A853", fontFamily: "'Playfair Display', Georgia, serif" }}
+          style={{
+            fontFamily: "'Amiri', serif",
+            fontSize: 48,
+            color: "#D4A853",
+            lineHeight: 1,
+            marginBottom: 4,
+          }}
         >
           گفتگو
         </p>
-        <h1 className="text-3xl font-bold tracking-tight" style={{ color: "#1E2D3D", fontFamily: "'Playfair Display', Georgia, serif" }}>
-          {mode === "signin" ? "Welcome back" : "Create your account"}
-        </h1>
-        <p className="mt-2 text-sm" style={{ color: "#1E2D3D", opacity: 0.55 }}>
-          {mode === "signin" ? "Sign in to continue learning" : "Start your language journey"}
-        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-3">
+      {/* Title */}
+      <h1
+        style={{
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: 32,
+          fontWeight: 700,
+          color: "#1E2D3D",
+          letterSpacing: "-0.02em",
+          lineHeight: 1.2,
+          marginBottom: 8,
+        }}
+      >
+        {mode === "signin" ? "Welcome back" : "Create your account"}
+      </h1>
+      <p
+        style={{
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 15,
+          color: "#1E2D3D",
+          opacity: 0.55,
+          marginBottom: 32,
+        }}
+      >
+        {mode === "signin" ? "Sign in to continue learning" : "Start your language journey"}
+      </p>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {mode === "signup" && (
-          <input
-            type="text"
-            placeholder="Display name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-2xl border-2 outline-none transition-colors"
-            style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E0D5", color: "#1E2D3D" }}
-          />
+          <div>
+            <input
+              type="text"
+              placeholder="Display name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              className="gf-input"
+            />
+          </div>
         )}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full px-4 py-3 rounded-2xl border-2 outline-none"
-          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E0D5", color: "#1E2D3D" }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full px-4 py-3 rounded-2xl border-2 outline-none"
-          style={{ backgroundColor: "#FFFFFF", borderColor: "#E8E0D5", color: "#1E2D3D" }}
-        />
+        <div>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="gf-input"
+          />
+        </div>
+        <div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            className="gf-input"
+          />
+        </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 rounded-2xl font-bold text-base mt-2 transition-all"
-          style={{
-            backgroundColor: "#1E2D3D",
-            color: "#FAF6F0",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.65 : 1,
-          }}
+          className="gf-btn-primary"
+          style={{ marginTop: 8 }}
         >
           {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
         </button>
 
-        <div className="flex items-center gap-3 my-3">
-          <div className="flex-1 h-px" style={{ backgroundColor: "#E8E0D5" }} />
-          <span className="text-xs uppercase tracking-widest" style={{ color: "#1E2D3D", opacity: 0.4 }}>
+        {/* Divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
+          <div style={{ flex: 1, height: 1, backgroundColor: "rgba(30,45,61,0.1)" }} />
+          <span
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#1E2D3D",
+              opacity: 0.35,
+            }}
+          >
             or
           </span>
-          <div className="flex-1 h-px" style={{ backgroundColor: "#E8E0D5" }} />
+          <div style={{ flex: 1, height: 1, backgroundColor: "rgba(30,45,61,0.1)" }} />
         </div>
 
+        {/* Google */}
         <button
           type="button"
           onClick={handleGoogle}
           disabled={loading}
-          className="w-full py-3 rounded-2xl font-semibold text-base border-2 flex items-center justify-center gap-3 transition-all"
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderColor: "#E8E0D5",
-            color: "#1E2D3D",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
+          className="gf-btn-secondary"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24">
+          <svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: 10, flexShrink: 0 }}>
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -161,16 +252,109 @@ const Auth = () => {
           </svg>
           Continue with Google
         </button>
+      </form>
 
+      {/* Toggle */}
+      <div style={{ textAlign: "center", marginTop: 24 }}>
         <button
           type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="text-center text-sm mt-4 underline-offset-4 hover:underline"
-          style={{ color: "#1E2D3D", opacity: 0.6 }}
+          className="gf-link"
         >
-          {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+          {mode === "signin"
+            ? "Don't have an account? Sign up"
+            : "Already have an account? Sign in"}
         </button>
-      </form>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      className="min-h-screen flex flex-col md:flex-row"
+      style={{ backgroundColor: "#FFFFFF" }}
+    >
+      {/* ── Left panel (desktop only) ── */}
+      <div
+        className="hidden md:flex flex-col justify-between relative"
+        style={{
+          width: 420,
+          flexShrink: 0,
+          backgroundColor: "#FAF6F0",
+          padding: "64px 56px",
+        }}
+      >
+        <VerticalGeoBorder />
+
+        {/* Wordmark */}
+        <div>
+          <p
+            style={{
+              fontFamily: "'Amiri', serif",
+              fontSize: 56,
+              fontWeight: 700,
+              color: "#D4A853",
+              lineHeight: 1,
+              marginBottom: 6,
+            }}
+          >
+            گفتگو
+          </p>
+          <p
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 22,
+              fontWeight: 600,
+              color: "#1E2D3D",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Guftugu
+          </p>
+        </div>
+
+        {/* Tagline */}
+        <div>
+          <p
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: "italic",
+              fontSize: 26,
+              fontWeight: 400,
+              color: "#1E2D3D",
+              lineHeight: 1.5,
+              letterSpacing: "-0.01em",
+              opacity: 0.8,
+            }}
+          >
+            "The language of your ancestors, one lesson at a time."
+          </p>
+        </div>
+
+        {/* Bottom decoration */}
+        <div>
+          <HorizontalGeoBorder />
+          <p
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 12,
+              color: "#1E2D3D",
+              opacity: 0.35,
+              marginTop: 16,
+            }}
+          >
+            Urdu · Sindhi · and more coming soon
+          </p>
+        </div>
+      </div>
+
+      {/* ── Right panel (form) ── */}
+      <div
+        className="flex-1 flex flex-col items-center justify-center"
+        style={{ padding: "64px 24px", backgroundColor: "#FFFFFF" }}
+      >
+        {formPanel}
+      </div>
     </div>
   );
 };
