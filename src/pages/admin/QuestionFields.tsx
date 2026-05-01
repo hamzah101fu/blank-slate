@@ -63,7 +63,8 @@ function OptionsArray({ form, name, label, urdu = false }: {
 
 function TraceLetterFields({ form }: { form: UseFormReturn<any> }) {
   const tolerance = useWatch({ control: form.control, name: "tolerance" }) ?? 3;
-  const referencePoints = useWatch({ control: form.control, name: "reference_points" }) ?? [];
+  const referencePoints: { x: number; y: number }[][] =
+    useWatch({ control: form.control, name: "reference_points" }) ?? [];
 
   return (
     <>
@@ -162,6 +163,13 @@ function AudioPlayFields({ form, uploadFile, uploading }: {
         )} />
         {uploading && <p style={{ color: "#6BA3C8", fontSize: 11 }}>Uploading…</p>}
       </FormItem>
+      <FormField control={form.control} name="transcript" render={({ field }) => (
+        <FormItem>
+          <FieldLabel>Transcript (shown after playing)</FieldLabel>
+          <FormControl><Textarea style={urduInputStyle} rows={2} placeholder="ارے یار، کیا حال ہے؟" {...field} /></FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
       <FormField control={form.control} name="correct_answer" render={({ field }) => (
         <FormItem>
           <FieldLabel>Correct Answer</FieldLabel>
@@ -403,6 +411,7 @@ export function buildContent(type: QuestionType, values: Record<string, any>): R
     case "audio_play":
       return {
         audio_url: values.audio_url,
+        transcript: values.transcript ?? "",
         correct_answer: values.correct_answer,
         options: (values.options || []).map((o: any) => o.value).filter(Boolean),
       };

@@ -3,11 +3,11 @@ import type { QuestionProps } from "./shared";
 
 export function BuildWord({ content, onAnswer, feedback }: QuestionProps) {
   // scrambled_letters: string[] — shuffled letters of the word
-  // correct_word: string
-  const { scrambled_letters = [], correct_word, hint } = content;
+  // word: string — the target word to build
+  const { scrambled_letters = [], word: targetWord, hint } = content;
 
   const [slots, setSlots] = useState<(string | null)[]>(
-    Array(correct_word?.length ?? scrambled_letters.length).fill(null)
+    Array(targetWord?.length ?? scrambled_letters.length).fill(null)
   );
   const [available, setAvailable] = useState<boolean[]>(
     scrambled_letters.map(() => true)
@@ -47,8 +47,8 @@ export function BuildWord({ content, onAnswer, feedback }: QuestionProps) {
   const handleCheck = () => {
     if (disabled) return;
     if (slots.some((s) => s === null)) return;
-    const word = slots.join("");
-    onAnswer(word === correct_word);
+    const assembled = slots.join("");
+    onAnswer(assembled === targetWord);
   };
 
   const allFilled = slots.every((s) => s !== null);

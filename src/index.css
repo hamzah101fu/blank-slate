@@ -92,13 +92,20 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes stage-unlock-ripple {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  100% { transform: scale(2.2);  opacity: 0;   }
+}
+
 /* ── Animation utility classes ───────────────────────────── */
 
-.animate-page-entry    { animation: page-entry     300ms ease-out       both; }
-.animate-stage-pulse   { animation: stage-pulse      2s  ease-in-out infinite; }
-.animate-feedback-slide{ animation: feedback-slide  250ms ease-out       both; }
-.animate-correct-pulse { animation: correct-pulse   400ms ease-out       both; }
-.animate-wrong-shake   { animation: wrong-shake     300ms ease-out       both; }
+.animate-page-entry    { animation: page-entry            300ms ease-out       both; }
+.animate-stage-pulse   { animation: stage-pulse             2s  ease-in-out infinite; }
+.animate-feedback-slide{ animation: feedback-slide         250ms ease-out       both; }
+.animate-correct-pulse { animation: correct-pulse          400ms ease-out       both; }
+.animate-wrong-shake   { animation: wrong-shake            300ms ease-out       both; }
+.animate-spin          { animation: spin                     1s  linear     infinite; }
+.animate-stage-unlock  { animation: stage-unlock-ripple    600ms ease-out   forwards; }
 
 /* ── Form input ──────────────────────────────────────────── */
 
@@ -308,3 +315,66 @@
   transition: text-decoration 150ms ease;
 }
 .gf-link:hover { text-decoration: underline; }
+
+/* ── Top navigation bar ──────────────────────────────────── */
+
+.gf-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 64px;
+  background: #FAF6F0;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+/* ── Avatar circle ───────────────────────────────────────── */
+
+.gf-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #6BA3C8;
+  color: #ffffff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+/* ── H3 label / section title style ─────────────────────── */
+
+.gf-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1E2D3D;
+  opacity: 0.45;
+}
+
+/* ── Wordmark ────────────────────────────────────────────── */
+
+.gf-wordmark-script {
+  font-family: 'Amiri', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #D4A853;
+  line-height: 1;
+}
+
+.gf-wordmark-latin {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E2D3D;
+  letter-spacing: -0.01em;
+}

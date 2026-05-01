@@ -130,20 +130,32 @@ const Auth = () => {
   const formPanel = (
     <div
       className="animate-page-entry"
-      style={{ width: "100%", maxWidth: 360 }}
+      style={{ width: "100%", maxWidth: 400 }}
     >
       {/* Logo (mobile: visible, desktop: hidden — shown in left panel instead) */}
       <div className="md:hidden text-center mb-8">
         <p
           style={{
             fontFamily: "'Amiri', serif",
-            fontSize: 48,
+            fontSize: 56,
+            fontWeight: 700,
             color: "#D4A853",
             lineHeight: 1,
-            marginBottom: 4,
+            marginBottom: 6,
           }}
         >
           گفتگو
+        </p>
+        <p
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 18,
+            fontWeight: 700,
+            color: "#1E2D3D",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Guftugu
         </p>
       </div>
 
@@ -151,11 +163,11 @@ const Auth = () => {
       <h1
         style={{
           fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: 32,
+          fontSize: 40,
           fontWeight: 700,
           color: "#1E2D3D",
           letterSpacing: "-0.02em",
-          lineHeight: 1.2,
+          lineHeight: 1.15,
           marginBottom: 8,
         }}
       >

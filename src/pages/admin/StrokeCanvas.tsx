@@ -1,43 +1,45 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const SIZE = 260;
 
 interface Point { x: number; y: number }
 
 interface Props {
-  value: Point[];
-  onChange: (points: Point[]) => void;
+  value: Point[][];
+  onChange: (strokes: Point[][]) => void;
   readonly?: boolean;
 }
 
 export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
+  const allStrokes = useRef<Point[][]>(value);
   const currentStroke = useRef<Point[]>([]);
-  const [hasStroke, setHasStroke] = useState(value.length > 0);
 
-  // Redraw canvas whenever value changes externally
+  // Sync allStrokes ref and redraw whenever value changes externally (e.g., form reset)
   useEffect(() => {
-    setHasStroke(value.length > 0);
-    redrawFromPoints(value);
+    allStrokes.current = value;
+    redrawFromStrokes(value);
   }, [value]);
 
-  const redrawFromPoints = (points: Point[]) => {
+  const redrawFromStrokes = (strokes: Point[][]) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, SIZE, SIZE);
-    if (points.length < 2) return;
-    ctx.beginPath();
     ctx.strokeStyle = "#1E2D3D";
     ctx.lineWidth = 4;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.moveTo(points[0].x * SIZE, points[0].y * SIZE);
-    for (let i = 1; i < points.length; i++) {
-      ctx.lineTo(points[i].x * SIZE, points[i].y * SIZE);
+    for (const stroke of strokes) {
+      if (stroke.length < 2) continue;
+      ctx.beginPath();
+      ctx.moveTo(stroke[0].x * SIZE, stroke[0].y * SIZE);
+      for (let i = 1; i < stroke.length; i++) {
+        ctx.lineTo(stroke[i].x * SIZE, stroke[i].y * SIZE);
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
   };
 
   const getPos = (e: React.MouseEvent | React.TouchEvent): Point | null => {
@@ -67,7 +69,6 @@ export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, SIZE, SIZE);
     ctx.beginPath();
     ctx.strokeStyle = "#1E2D3D";
     ctx.lineWidth = 4;
@@ -100,8 +101,9 @@ export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
     // Downsample: keep every 3rd point for efficiency
     const sampled = currentStroke.current.filter((_, i) => i % 3 === 0);
     if (sampled.length < 2) return;
-    setHasStroke(true);
-    onChange(sampled);
+    const updated = [...allStrokes.current, sampled];
+    allStrokes.current = updated;
+    onChange(updated);
   };
 
   const handleClear = () => {
@@ -110,9 +112,13 @@ export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, SIZE, SIZE);
     currentStroke.current = [];
-    setHasStroke(false);
+    allStrokes.current = [];
     onChange([]);
   };
+
+  const strokeCount = value.length;
+  const totalPoints = value.reduce((n, s) => n + s.length, 0);
+  const hasStrokes = totalPoints > 0;
 
   return (
     <div className="flex flex-col items-start gap-2">
@@ -151,15 +157,19 @@ export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
               border: "none",
               cursor: "pointer",
               padding: "2px 0",
-              opacity: hasStroke ? 1 : 0.35,
+              opacity: hasStrokes ? 1 : 0.35,
             }}
-            disabled={!hasStroke}
+            disabled={!hasStrokes}
           >
-            Clear stroke
+            Clear all strokes
           </button>
         )}
         <span style={{ fontSize: 11, color: "#1E2D3D", opacity: 0.45 }}>
-          {hasStroke ? `${value.length} points recorded` : readonly ? "No reference stroke set" : "Draw the stroke once to set it as reference"}
+          {hasStrokes
+            ? `${strokeCount} stroke${strokeCount !== 1 ? "s" : ""}, ${totalPoints} points recorded`
+            : readonly
+            ? "No reference strokes set"
+            : "Draw strokes one at a time — lift between each stroke"}
         </span>
       </div>
     </div>

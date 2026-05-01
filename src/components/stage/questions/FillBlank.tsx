@@ -5,11 +5,11 @@ export function FillBlank({ content, onAnswer, feedback }: QuestionProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   // sentence: string with "___" placeholder, e.g. "میں ___ ہوں"
-  // correct_word: string
+  // correct_answer: string
   // options: string[] — wrong words
-  const { sentence, correct_word, options = [] } = content;
+  const { sentence, correct_answer, options = [] } = content;
 
-  const allOptions: string[] = shuffleOnce([correct_word, ...options.slice(0, 3)]);
+  const allOptions: string[] = shuffleOnce([correct_answer, ...options.slice(0, 3)]);
 
   function shuffleOnce(arr: string[]) {
     const a = [...arr];
@@ -26,7 +26,7 @@ export function FillBlank({ content, onAnswer, feedback }: QuestionProps) {
   const handlePick = (word: string) => {
     if (feedback !== "idle") return;
     setSelected(word);
-    onAnswer(word === correct_word);
+    onAnswer(word === correct_answer);
   };
 
   return (

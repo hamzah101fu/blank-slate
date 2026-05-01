@@ -53,7 +53,7 @@ function DohraoBanner({ stageName, onContinue }: { stageName: string; onContinue
           maxWidth: 320,
           padding: "16px",
           borderRadius: 16,
-          backgroundColor: "#D4A853",
+          backgroundColor: "#6BA3C8",
           color: "#FFFFFF",
           border: "none",
           fontWeight: 700,

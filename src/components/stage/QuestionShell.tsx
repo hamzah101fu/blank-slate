@@ -89,6 +89,7 @@ export function QuestionShell({
 
   const question = questions[currentIdx];
   const progress = (currentIdx / questions.length) * 100;
+  const label = TYPE_LABELS[question?.type ?? ""] ?? "";
 
   const handleAnswer = (correct: boolean) => {
     setFeedback(correct ? "correct" : "wrong");
@@ -98,12 +99,12 @@ export function QuestionShell({
 
   const handleContinue = () => {
     setFeedback("idle");
-    onContinue(); // advance to next question
+    onContinue();
   };
 
   const handleRetry = () => {
     setFeedback("idle");
-    setRetryCount((r) => r + 1); // forces question component remount via key
+    setRetryCount((r) => r + 1);
   };
 
   if (!question) return null;
@@ -113,83 +114,101 @@ export function QuestionShell({
       className="flex flex-col min-h-screen"
       style={{ backgroundColor: "#FAF6F0" }}
     >
-      {/* Top bar */}
+      {/* ── Top bar ── */}
       <div
         style={{
           position: "sticky",
           top: 0,
           zIndex: 10,
           backgroundColor: "#FAF6F0",
-          borderBottom: "1px solid #E8E0D5",
-          padding: "12px 20px",
+          borderBottom: "1px solid rgba(30,45,61,0.08)",
+          padding: "0 24px",
+          height: 64,
           display: "flex",
           alignItems: "center",
-          gap: 12,
+          gap: 16,
         }}
       >
-        {/* Quit button */}
+        {/* Quit / back button */}
         <button
           onClick={onQuit}
           style={{
             background: "none",
             border: "none",
             cursor: "pointer",
-            padding: 4,
+            padding: 6,
             color: "#1E2D3D",
-            opacity: 0.5,
+            opacity: 0.4,
             flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 8,
+            transition: "opacity 150ms ease, background 150ms ease",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.8"; e.currentTarget.style.background = "rgba(30,45,61,0.06)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.4"; e.currentTarget.style.background = "none"; }}
           aria-label="Quit"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
 
         {/* Progress bar */}
-        <div
-          style={{
-            flex: 1,
-            height: 8,
-            backgroundColor: "#E8E0D5",
-            borderRadius: 99,
-            overflow: "hidden",
-          }}
-        >
+        <div className="gf-progress-track" style={{ flex: 1 }}>
           <div
-            style={{
-              height: "100%",
-              width: `${progress}%`,
-              backgroundColor: "#D4A853",
-              borderRadius: 99,
-              transition: "width 0.4s ease",
-            }}
+            className="gf-progress-fill"
+            style={{ width: `${progress}%` }}
           />
         </div>
 
-        {/* Counter */}
-        <span
+        {/* Stage label + counter */}
+        <div
           style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#1E2D3D",
-            opacity: 0.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
             flexShrink: 0,
-            minWidth: 40,
-            textAlign: "right",
           }}
         >
-          {currentIdx + 1}/{questions.length}
-        </span>
+          {label && (
+            <span
+              style={{
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#6BA3C8",
+              }}
+            >
+              {label}
+            </span>
+          )}
+          <span
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#1E2D3D",
+              opacity: 0.45,
+              minWidth: 36,
+              textAlign: "right",
+            }}
+          >
+            {currentIdx + 1}/{questions.length}
+          </span>
+        </div>
       </div>
 
-      {/* Question content */}
+      {/* ── Question content ── */}
       <div
         style={{
           flex: 1,
-          padding: "24px 20px",
-          maxWidth: 480,
+          padding: "32px 24px",
+          maxWidth: 720,
           width: "100%",
           margin: "0 auto",
         }}
@@ -202,27 +221,43 @@ export function QuestionShell({
         />
       </div>
 
-      {/* Feedback panel */}
+      {/* ── Feedback panel ── */}
       {feedback !== "idle" && (
         <div
+          className="animate-feedback-slide"
           style={{
             position: "sticky",
             bottom: 0,
             backgroundColor: feedback === "correct" ? "#D4A853" : "#C17B4A",
-            padding: "20px 20px 32px",
+            padding: "20px 24px 36px",
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            maxWidth: "100%",
           }}
         >
-          <div style={{ maxWidth: 480, margin: "0 auto", width: "100%" }}>
-            <div className="flex items-center gap-3 mb-3">
-              <span style={{ fontSize: 24 }}>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 16,
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(255,255,255,0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  fontSize: 18,
+                }}
+              >
                 {feedback === "correct" ? "✓" : "✗"}
-              </span>
+              </div>
               <div>
                 <p
                   style={{
@@ -230,37 +265,58 @@ export function QuestionShell({
                     fontSize: 18,
                     color: "#FFFFFF",
                     lineHeight: 1.2,
+                    fontFamily: "'Playfair Display', Georgia, serif",
                   }}
                 >
                   {feedback === "correct" ? "Sahi! صحیح" : "Oops! غلط"}
                 </p>
                 {feedback === "wrong" && question.content.correct_letter && (
-                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 2 }}>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "rgba(255,255,255,0.85)",
+                      marginTop: 3,
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                    }}
+                  >
                     Correct: {question.content.correct_letter}
                   </p>
                 )}
                 {feedback === "wrong" && question.content.correct_word && (
-                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 2, fontFamily: "'Amiri', serif", direction: "rtl" }}>
+                  <p
+                    style={{
+                      fontSize: 15,
+                      color: "rgba(255,255,255,0.9)",
+                      marginTop: 3,
+                      fontFamily: "'Amiri', serif",
+                      direction: "rtl",
+                    }}
+                  >
                     Correct: {question.content.correct_word}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Continue / Try again button */}
+            {/* Continue / Try again */}
             <button
               onClick={feedback === "correct" ? handleContinue : handleRetry}
               style={{
                 width: "100%",
-                padding: "14px",
-                borderRadius: 16,
+                height: 56,
+                borderRadius: 12,
                 backgroundColor: "#FFFFFF",
                 color: feedback === "correct" ? "#D4A853" : "#C17B4A",
                 border: "none",
                 fontWeight: 700,
-                fontSize: 15,
+                fontSize: 16,
                 cursor: "pointer",
+                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: "-0.01em",
+                transition: "transform 80ms ease",
               }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
+              onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
             >
               {feedback === "correct" ? "Continue →" : "Try Again"}
             </button>

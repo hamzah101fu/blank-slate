@@ -57,6 +57,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        /* brand palette — use as bg-cream, text-ink, bg-sky, etc. */
+        cream:      "hsl(var(--cream))",
+        ink:        "hsl(var(--ink))",
+        sky:        "hsl(var(--sky))",
+        gold:       "hsl(var(--gold))",
+        terracotta: "hsl(var(--terracotta))",
+      },
+      fontFamily: {
+        display: ['"Playfair Display"', "Georgia", "serif"],
+        script:  ["Amiri", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,25 +75,23 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to:   { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to:   { height: "0" },
+        },
+        "stage-unlock": {
+          "0%":   { transform: "scale(1)",    opacity: "1" },
+          "40%":  { transform: "scale(1.35)", opacity: "0.6" },
+          "100%": { transform: "scale(1.8)",  opacity: "0" },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        "accordion-down":   "accordion-down 0.2s ease-out",
+        "accordion-up":     "accordion-up 0.2s ease-out",
+        "stage-unlock":     "stage-unlock 600ms ease-out forwards",
       },
     },
   },

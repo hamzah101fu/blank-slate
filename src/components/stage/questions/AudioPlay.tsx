@@ -57,7 +57,6 @@ export function AudioPlay({ content, onAnswer, feedback }: QuestionProps) {
           alignItems: "center",
           justifyContent: "center",
           transition: "background-color 0.15s",
-          boxShadow: "0 4px 16px rgba(212,168,83,0.35)",
         }}
         aria-label={playing ? "Stop audio" : "Play audio"}
       >

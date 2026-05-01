@@ -71,69 +71,79 @@ const Index = () => {
     session?.user.email?.split("@")[0];
 
   return (
-    <div
-      className="min-h-screen relative"
-      style={{ backgroundColor: "#FAF6F0" }}
-    >
-      {/* ── Auth corner ── */}
-      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
-        {session ? (
-          <>
-            <span
+    <div className="min-h-screen" style={{ backgroundColor: "#FAF6F0" }}>
+
+      {/* ── Top navigation bar ── */}
+      <nav className="gf-nav">
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span className="gf-wordmark-script">گفتگو</span>
+          <span className="gf-wordmark-latin">Guftugu</span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {session ? (
+            <>
+              <span
+                style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "#1E2D3D",
+                  opacity: 0.6,
+                }}
+              >
+                {displayName}
+              </span>
+              <button
+                onClick={() => supabase.auth.signOut()}
+                style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(30,45,61,0.15)",
+                  color: "#1E2D3D",
+                  backgroundColor: "#FFFFFF",
+                  cursor: "pointer",
+                  transition: "background 150ms ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(30,45,61,0.04)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#FFFFFF")}
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/auth"
               style={{
                 fontFamily: "'Inter', system-ui, sans-serif",
                 fontSize: 13,
-                fontWeight: 500,
-                color: "#1E2D3D",
-                opacity: 0.6,
-              }}
-            >
-              {displayName}
-            </span>
-            <button
-              onClick={() => supabase.auth.signOut()}
-              style={{
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontSize: 12,
                 fontWeight: 600,
-                padding: "8px 16px",
+                padding: "10px 20px",
                 borderRadius: 8,
-                border: "1px solid rgba(30,45,61,0.15)",
-                color: "#1E2D3D",
-                backgroundColor: "#FFFFFF",
-                cursor: "pointer",
-                transition: "background 150ms ease",
+                backgroundColor: "#1E2D3D",
+                color: "#FAF6F0",
+                textDecoration: "none",
+                transition: "opacity 150ms ease",
               }}
             >
-              Sign out
-            </button>
-          </>
-        ) : (
-          <Link
-            to="/auth"
-            style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontSize: 13,
-              fontWeight: 600,
-              padding: "8px 18px",
-              borderRadius: 8,
-              backgroundColor: "#1E2D3D",
-              color: "#FAF6F0",
-              textDecoration: "none",
-              transition: "opacity 150ms ease",
-            }}
-          >
-            Sign in
-          </Link>
-        )}
-      </div>
+              Sign in
+            </Link>
+          )}
+        </div>
+      </nav>
 
       {/* ── Main content ── */}
       <div
-        className="animate-page-entry min-h-screen flex flex-col items-center justify-center"
-        style={{ padding: "96px 24px 64px" }}
+        className="animate-page-entry flex flex-col items-center justify-center"
+        style={{
+          minHeight: "calc(100vh - 64px)",
+          padding: "48px 24px 64px",
+        }}
       >
-        <div style={{ width: "100%", maxWidth: 480 }}>
+        <div style={{ width: "100%", maxWidth: 720 }}>
 
           {/* ── Hero ── */}
           <div style={{ textAlign: "center", marginBottom: 48 }}>
@@ -142,8 +152,8 @@ const Index = () => {
                 fontFamily: "'Amiri', serif",
                 fontSize: 64,
                 fontWeight: 700,
-                color: "#D4A853",
-                lineHeight: 1.2,
+                color: "#1E2D3D",
+                lineHeight: 1.3,
                 direction: "rtl",
                 marginBottom: 16,
               }}
@@ -153,11 +163,11 @@ const Index = () => {
             <h1
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: 32,
+                fontSize: 40,
                 fontWeight: 700,
                 color: "#1E2D3D",
                 letterSpacing: "-0.02em",
-                lineHeight: 1.25,
+                lineHeight: 1.2,
                 marginBottom: 32,
               }}
             >
@@ -167,19 +177,7 @@ const Index = () => {
           </div>
 
           {/* ── Language selector label ── */}
-          <p
-            style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.09em",
-              textTransform: "uppercase",
-              color: "#1E2D3D",
-              opacity: 0.4,
-              textAlign: "center",
-              marginBottom: 16,
-            }}
-          >
+          <p className="gf-label" style={{ textAlign: "center", marginBottom: 16 }}>
             Choose a language
           </p>
 
@@ -199,8 +197,8 @@ const Index = () => {
                   <span
                     style={{
                       fontFamily: "'Playfair Display', Georgia, serif",
-                      fontSize: 22,
-                      fontWeight: 600,
+                      fontSize: 26,
+                      fontWeight: 700,
                       color: "#1E2D3D",
                       lineHeight: 1.2,
                     }}
@@ -210,7 +208,7 @@ const Index = () => {
                   <span
                     style={{
                       fontFamily: "'Amiri', serif",
-                      fontSize: 32,
+                      fontSize: 36,
                       color: isSelected ? "#6BA3C8" : "#1E2D3D",
                       lineHeight: 1.6,
                       direction: "rtl",
@@ -221,13 +219,26 @@ const Index = () => {
                   <span
                     style={{
                       fontFamily: "'Inter', system-ui, sans-serif",
-                      fontSize: 11,
+                      fontSize: 12,
                       color: "#1E2D3D",
-                      opacity: 0.45,
-                      lineHeight: 1.4,
+                      opacity: 0.5,
+                      lineHeight: 1.5,
                     }}
                   >
                     {lang.tagline}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: isSelected ? "#6BA3C8" : "#1E2D3D",
+                      opacity: isSelected ? 1 : 0.35,
+                      letterSpacing: "0.04em",
+                      marginTop: 2,
+                    }}
+                  >
+                    {lang.speakers}
                   </span>
                 </button>
               );
@@ -235,31 +246,34 @@ const Index = () => {
           </div>
 
           {/* ── CTA ── */}
-          <button
-            disabled={!selected}
-            onClick={() => {
-              if (!selected) return;
-              const lang = LANGUAGES.find((l) => l.id === selected);
-              if (lang) localStorage.setItem("guftugu_language", lang.name);
-              navigate(session ? "/course-map" : "/auth");
-            }}
-            className="gf-btn-primary gf-focus-ring"
-          >
-            Start Learning
-          </button>
+          <div style={{ maxWidth: 480, margin: "0 auto" }}>
+            <button
+              disabled={!selected}
+              onClick={() => {
+                if (!selected) return;
+                const lang = LANGUAGES.find((l) => l.id === selected);
+                if (lang) localStorage.setItem("guftugu_language", lang.name);
+                navigate(session ? "/course-map" : "/auth");
+              }}
+              className="gf-btn-primary gf-focus-ring"
+            >
+              Start Learning
+            </button>
 
-          <p
-            style={{
-              textAlign: "center",
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontSize: 12,
-              color: "#1E2D3D",
-              opacity: 0.35,
-              marginTop: 16,
-            }}
-          >
-            Free · No account needed to start
-          </p>
+            <p
+              style={{
+                textAlign: "center",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 12,
+                color: "#1E2D3D",
+                opacity: 0.35,
+                marginTop: 16,
+              }}
+            >
+              Free · No account needed to start
+            </p>
+          </div>
+
         </div>
       </div>
     </div>

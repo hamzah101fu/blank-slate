@@ -1,18 +1,34 @@
 import { useState } from "react";
 import { OptionButton, type QuestionProps } from "./shared";
 
-export function ImageMatch({ content, onAnswer, feedback }: QuestionProps) {
-  const [selected, setSelected] = useState<number | null>(null);
+// Content schema (as saved by buildContent in QuestionFields.tsx):
+//   image_url:   string  — Supabase public URL of the image
+//   correct_urdu: string — the right Urdu label
+//   options:     string[] — wrong Urdu labels
 
-  // prompt: string — Urdu word/phrase to match
-  // correct_index: number
-  // options: Array<{ image_url: string; label?: string }>
-  const { prompt, correct_index, options = [] } = content;
+export function ImageMatch({ content, onAnswer, feedback }: QuestionProps) {
+  const { image_url, correct_urdu, options = [] } = content;
+
+  // Build shuffled choices (correct + up to 3 wrong), shuffle once on mount
+  const [choices] = useState<string[]>(() => {
+    const all: string[] = [correct_urdu, ...options.slice(0, 3)].filter(Boolean);
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    return all;
+  });
+
+  const [selected, setSelected] = useState<number | null>(null);
+  // Start in "error" immediately if there is no URL — avoids a stuck "loading" state
+  const [imgState, setImgState] = useState<"loading" | "loaded" | "error">(
+    image_url ? "loading" : "error"
+  );
 
   const handlePick = (idx: number) => {
     if (feedback !== "idle") return;
     setSelected(idx);
-    onAnswer(idx === correct_index);
+    onAnswer(choices[idx] === correct_urdu);
   };
 
   return (
@@ -21,38 +37,80 @@ export function ImageMatch({ content, onAnswer, feedback }: QuestionProps) {
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: "#1E2D3D", opacity: 0.45 }}
       >
-        Match the image
+        What does this show?
       </p>
 
-      {/* Word prompt */}
+      {/* Image display */}
       <div
         style={{
-          textAlign: "center",
-          fontFamily: "'Amiri', serif",
-          fontSize: 36,
-          fontWeight: 700,
-          color: "#1E2D3D",
-          direction: "rtl",
-          lineHeight: 1.4,
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid rgba(30,45,61,0.08)",
+          backgroundColor: "rgba(30,45,61,0.03)",
+          minHeight: 160,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
         }}
       >
-        {prompt}
+        {/* Loading skeleton */}
+        {imgState === "loading" && (
+          <span
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13,
+              color: "#1E2D3D",
+              opacity: 0.3,
+            }}
+          >
+            Loading image…
+          </span>
+        )}
+
+        {/* Error state */}
+        {imgState === "error" && (
+          <span
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13,
+              color: "#C17B4A",
+            }}
+          >
+            Could not load image
+          </span>
+        )}
+
+        {/* The image — always in DOM so onLoad/onError fire; hidden until loaded */}
+        {image_url && (
+          <img
+            src={image_url}
+            alt=""
+            onLoad={() => setImgState("loaded")}
+            onError={() => setImgState("error")}
+            style={{
+              width: "100%",
+              maxHeight: 260,
+              objectFit: "contain",
+              display: imgState === "loaded" ? "block" : "none",
+              borderRadius: 16,
+            }}
+          />
+        )}
       </div>
 
-      {/* Image options — 2×2 grid */}
+      {/* Urdu label options — 2-column grid */}
       <div className="grid grid-cols-2 gap-3">
-        {options.map(
-          (opt: { image_url: string; label?: string }, idx: number) => (
-            <OptionButton
-              key={idx}
-              label={opt.label}
-              image={opt.image_url}
-              isSelected={selected === idx}
-              feedback={selected === idx ? feedback : "idle"}
-              onClick={() => handlePick(idx)}
-            />
-          )
-        )}
+        {choices.map((choice, idx) => (
+          <OptionButton
+            key={idx}
+            label={choice}
+            isSelected={selected === idx}
+            feedback={selected === idx ? feedback : "idle"}
+            onClick={() => handlePick(idx)}
+            urdu
+          />
+        ))}
       </div>
     </div>
   );
